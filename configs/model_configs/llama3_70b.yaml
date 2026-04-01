@@ -1,0 +1,4 @@
+# Llama 3 70B model configuration
+model_name: "meta-llama/Meta-Llama-3-70B-Instruct"
+max_model_len: 8192
+dtype: "auto"

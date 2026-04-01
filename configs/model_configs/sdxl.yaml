@@ -1,0 +1,4 @@
+# SDXL model configuration
+model_name: "stabilityai/stable-diffusion-xl-base-1.0"
+resolution: 1024
+num_inference_steps: 50

@@ -1,0 +1,1 @@
+"""Diffusion inference pipeline."""

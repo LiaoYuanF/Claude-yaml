@@ -1,0 +1,3 @@
+# FP8 W8A8 quantization config
+quantization: "fp8"
+kv_cache_dtype: "fp8_e5m2"

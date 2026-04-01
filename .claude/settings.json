@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'runtime/kernels/|runtime/layers/attention/|runtime/layers/moe/'; then echo '⚡ 性能关键路径已修改 — 完成后请运行 /benchmark 验证无回归'; fi"
+          },
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'api/openai/protocol\\.py'; then echo '⚠️ API 协议定义已修改 — 须确认 OpenAI 兼容性，检查下游 client 是否需要同步更新'; fi"
+          },
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'managers/io_struct\\.py'; then echo '🔗 API/Runtime 边界契约已修改 — 须同步检查 api/ 和 runtime/ 两侧的调用方'; fi"
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "gpu-cluster": {
+      "command": "python",
+      "args": [".claude/mcp/ssh-executor/server.py"],
+      "disabled": true,
+      "_comment": "启用前需先实现 MCP SSH server，详见 docs/claude/remote-verification-workflow.md"
+    }
+  }
+}
