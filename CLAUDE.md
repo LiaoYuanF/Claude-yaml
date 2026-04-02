@@ -29,6 +29,13 @@
 分布式:   runtime/distributed → runtime/layers (TP/PP/EP 切分注入)
 ```
 
+## 并行开发策略
+
+当任务可分解为 2-4 个独立子任务（修改不同模块、无顺序依赖）时，使用 `/parallel-dev` 启动多 worktree 并行开发模式。每个 agent 在隔离 worktree 中工作，完成后由 `/review-worktree` 审查，通过后串行 merge。
+
+**适用：** 多模块特性开发、独立 bug 修复批量处理、重构+新功能并行
+**不适用：** 单文件改动、有顺序依赖的任务链、快速 hotfix
+
 ## 代码质量偏好
 
 - 性能关键路径（scheduler, kernels, attention）：极致优化
