@@ -6,19 +6,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'runtime/kernels/|runtime/layers/attention/|runtime/layers/moe/'; then echo '⚡ 性能关键路径已修改 — 完成后请运行 /benchmark 验证无回归'; fi"
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'runtime/kernels/|runtime/layers/attention/|runtime/layers/moe/'; then echo \"CONSTRAINT: 性能关键路径已修改 ($file)。必须执行: 1) 在同一次任务中运行 /benchmark 对比 baseline 2) 若 throughput < 0.95x baseline 或 latency_p99 > 1.05x baseline，回滚变更并重新优化。参考 benchmarks/CLAUDE.md 中的回归阈值。\"; fi"
           },
           {
             "type": "command",
-            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'api/openai/protocol\\.py'; then echo '⚠️ API 协议定义已修改 — 须确认 OpenAI 兼容性，检查下游 client 是否需要同步更新'; fi"
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'api/openai/protocol\\.py'; then echo \"CONSTRAINT: API 协议已修改。必须执行: 1) grep -r 'protocol' inference_engine/api/ 检查所有引用方 2) 确认字段变更向后兼容（只加不删不改类型）3) 同步更新 tests/test_api/test_openai_compat.py\"; fi"
           },
           {
             "type": "command",
-            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'managers/io_struct\\.py'; then echo '🔗 API/Runtime 边界契约已修改 — 须同步检查 api/ 和 runtime/ 两侧的调用方'; fi"
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'managers/io_struct\\.py'; then echo \"CONSTRAINT: API/Runtime 边界契约已修改。必须执行: 1) grep -r 'io_struct' inference_engine/ 列出所有消费方 2) 逐一验证字段兼容性 3) 同步更新两侧的序列化/反序列化逻辑\"; fi"
           },
           {
             "type": "command",
-            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE '(tests/|test_).*\\.py$'; then echo '🧪 测试文件已修改 — 建议运行 /ci-test quick 验证'; fi"
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'runtime/models/.*\\.py$' && ! echo \"$file\" | grep -qE '__init__|CLAUDE'; then echo \"CONSTRAINT: 模型文件已修改。必须执行: 1) 验证 forward() 签名与 model_runner.py 兼容 2) 验证 load_weights() 与 model_loader 兼容 3) 确认模型已在 models/__init__.py 注册\"; fi"
+          },
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'CLAUDE\\.md$'; then echo \"CONSTRAINT: CLAUDE.md 已修改。必须执行: 1) 验证所有引用的文件路径存在 (grep 反引号中的路径并 test -f) 2) 确认依赖关系声明与实际 import 一致\"; fi"
           }
         ]
       }
@@ -29,7 +33,7 @@
       "command": "python",
       "args": [".claude/mcp/ssh-executor/server.py"],
       "disabled": true,
-      "_comment": "启用前需先实现 MCP SSH server，详见 docs/claude/remote-verification-workflow.md"
+      "_comment": "启用前需先实现 MCP SSH server"
     }
   }
 }
