@@ -36,6 +36,18 @@
 **适用：** 多模块特性开发、独立 bug 修复批量处理、重构+新功能并行
 **不适用：** 单文件改动、有顺序依赖的任务链、快速 hotfix
 
+## CI 闭环
+
+代码变更的验证通过 `/ci-test` skill 在远程 GPU 测试集群执行。流程：
+
+```
+代码变更 → /ci-test → 远程执行测试 → 失败? → 自动修复(最多3轮) → 全量通过 → /profile-perf → 产出报告
+```
+
+- 测试环境配置: `configs/ci/test-env.yaml`（迁移时填入实际值）
+- 测试矩阵: `configs/ci/test-matrix.yaml`（smoke/unit/integration/e2e/performance）
+- 遗留代码库完整重构: `/refactor-legacy`（编排 ai-native-transform → parallel-dev → ci-test → profile-perf）
+
 ## 代码质量偏好
 
 - 性能关键路径（scheduler, kernels, attention）：极致优化

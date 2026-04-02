@@ -1,0 +1,65 @@
+# CI 测试矩阵
+# 定义各级别测试的范围、运行环境和通过标准
+
+test_groups:
+  smoke:
+    description: "快速冒烟测试，验证基本功能可用"
+    environment: local          # local | remote
+    commands:
+      - "python -c 'import inference_engine; print(\"import OK\")'"
+      - ""                      # e.g. python -m pytest tests/test_api/ -x --timeout=30
+    pass_criteria:
+      all_pass: true
+    timeout: 60
+
+  unit:
+    description: "单元测试，不依赖 GPU"
+    environment: local
+    commands:
+      - ""                      # e.g. python -m pytest tests/test_api/ tests/test_runtime/ -v --timeout=120
+    pass_criteria:
+      all_pass: true
+      no_new_skip: true         # 不允许新增 skip
+    timeout: 300
+
+  integration:
+    description: "集成测试，需要 GPU"
+    environment: remote
+    commands:
+      - ""                      # e.g. python -m pytest tests/test_models/ tests/test_kernels/ -v --timeout=300
+      - ""                      # e.g. python scripts/tools/validate_inference.py --config configs/model_configs/llama3_70b.yaml
+    pass_criteria:
+      all_pass: true
+    timeout: 1800
+    gpu_required: true
+
+  e2e:
+    description: "端到端测试，启动完整服务并发送请求"
+    environment: remote
+    commands:
+      - ""                      # e.g. bash scripts/ci/run-remote-tests.sh --suite e2e
+    pass_criteria:
+      all_pass: true
+      latency_p99_ms: null      # e.g. 200 (填入实际值)
+      throughput_min: null       # e.g. 100 tokens/s
+    timeout: 3600
+    gpu_required: true
+
+  performance:
+    description: "性能基准测试，对比 baseline"
+    environment: remote
+    commands:
+      - ""                      # e.g. python benchmarks/run_benchmark.py --model ${MODEL} --output results/benchmark.json
+    pass_criteria:
+      throughput_ratio: 0.95    # ≥ baseline × 0.95
+      latency_p99_ratio: 1.05  # ≤ baseline × 1.05
+      memory_peak_ratio: 1.10  # ≤ baseline × 1.10
+    timeout: 1800
+    gpu_required: true
+
+# 各场景使用的测试级别
+presets:
+  quick:      [smoke, unit]                           # 快速验证，本地可跑
+  standard:   [smoke, unit, integration]              # 常规 CI
+  full:       [smoke, unit, integration, e2e, performance]  # 完整验证
+  perf_only:  [performance]                           # 仅性能测试

@@ -1,0 +1,46 @@
+# CI 测试环境配置
+# 迁移到实际项目时，替换为真实的连接信息和命令
+
+test_environment:
+  # SSH 连接（替换为实际值）
+  host: ""          # e.g. gpu-test.example.com
+  user: ""          # e.g. ryan
+  ssh_key: ""       # e.g. ~/.ssh/id_ed25519
+  work_dir: ""      # e.g. /home/ryan/workspace/project
+
+  # 环境初始化
+  setup_commands:
+    - ""            # e.g. conda activate inference
+    - ""            # e.g. pip install -e . --quiet
+
+  # 代码同步方式: rsync | git
+  sync_method: "rsync"
+  sync_excludes:
+    - ".git"
+    - "__pycache__"
+    - "*.pyc"
+    - "results/"
+    - "wandb/"
+
+retry_policy:
+  max_retries: 3              # 自动修复最大重试次数
+  retry_delay_seconds: 10     # 重试间隔
+  fail_fast: false            # true = 第一个失败即停止; false = 跑完全部再汇总
+
+timeouts:
+  sync: 120           # 代码同步超时 (秒)
+  setup: 300           # 环境准备超时
+  unit_test: 600       # 单元测试超时
+  integration_test: 1800  # 集成测试超时
+  e2e_test: 3600       # 端到端测试超时
+  profiling: 1800      # 性能 profiling 超时
+
+profiling:
+  enabled: true
+  tools:
+    - "torch_profiler"       # torch.profiler.profile
+    - "memory_snapshot"      # scripts/profiling/memory_snapshot.py
+    # - "nsight"             # nsight systems (需要 nsys 可用)
+  output_dir: "results/profiling"
+  warmup_steps: 3            # profiling 前的预热步数
+  active_steps: 10           # 实际采集的步数

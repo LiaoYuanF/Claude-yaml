@@ -15,6 +15,10 @@
           {
             "type": "command",
             "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE 'managers/io_struct\\.py'; then echo '🔗 API/Runtime 边界契约已修改 — 须同步检查 api/ 和 runtime/ 两侧的调用方'; fi"
+          },
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -qE '(tests/|test_).*\\.py$'; then echo '🧪 测试文件已修改 — 建议运行 /ci-test quick 验证'; fi"
           }
         ]
       }
